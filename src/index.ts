@@ -26,7 +26,7 @@ client.on('message_create', async (message: Message, sender: any) => {
         const image = new MessageMedia('image/jpeg', data, 'image.jpg')
         await message.reply(image, undefined, { sendMediaAsSticker: true })
       } catch(e) {
-        await message.reply('❌ Não foi possível gerar um sticker com essa imagem')
+        await message.reply('❌ Não foi possível gerar um sticker com essa imagem ❌')
       }
     } else if(message.type === MessageTypes.VIDEO){
       try {
@@ -34,7 +34,7 @@ client.on('message_create', async (message: Message, sender: any) => {
         const image = new MessageMedia('video/mp4', data, 'video/mp4')
         await message.reply(image, undefined, { sendMediaAsSticker: true })
       } catch(e) {
-        await message.reply('❌ Não foi possível gerar um sticker com esse video')
+        await message.reply('❌ Não foi possível gerar um sticker com esse video ❌')
       }
     } else if(message.type === MessageTypes.TEXT){
       try {
@@ -44,7 +44,7 @@ client.on('message_create', async (message: Message, sender: any) => {
           const image = await new MessageMedia("image/jpeg", returnedB64, "image.jpg")
           await message.reply(image, undefined ,{ sendMediaAsSticker: true })
       } catch(e) {
-          message.reply("❌ Não foi possível gerar um sticker com esse link")
+          message.reply("❌ Não foi possível gerar um sticker com esse link ❌")
       }
     }
   }
@@ -57,23 +57,40 @@ client.on('message_create', async (message: Message, sender: any) => {
       const image = await new MessageMedia("image/jpeg", returnedB64, "image.jpg")
       await message.reply(image, undefined, { sendMediaAsSticker: true })
     } catch(e) {
-        message.reply("❌ Não foi possível gerar um sticker com esse link")
+        message.reply("❌ Não foi possível gerar um sticker com esse link ❌")
     }
   }
+
+  if(command === '!everyone') {
+    const chat: any = await message.getChat();
+
+    let text = "";
+    let mentions = [];
+
+    for(let participant of chat?.participants) {
+        const contact = await client.getContactById(participant.id._serialized);
+        
+        mentions.push(contact);
+        text += `@${participant.id.user} `;
+    }
+
+    await chat.sendMessage(text, { mentions });
+}
 });
 
 client.on('message', async (message: Message) => {
   const command = message.body.split(' ')[0]
   console.log(message.from)
   if(command === "/teamo"){
-    const image = MessageMedia.fromFilePath('./assets/abc.webp')
-    await message.reply(image)
-    await client.sendMessage(message.from, 'TE AMO MAS TU ME FUUUUUDEUUUUUU, TE AMO MAS TU ME FUDEU')
-    await client.sendMessage(message.from, 'https://www.youtube.com/watch?v=rotmF54eSe0&ab_channel=Furac%C3%A3o2000', {linkPreview: true})
-    // try {
-  
-    // } catch(e) {
-    //     message.reply("❌ Nao foi possivel te dar amor, tente na proxima")
-    // }
+    try {
+      await client.sendMessage(message.from, 'TE AMO MAS TU ME FUUUUUDEUUUUUU, TE AMO MAS TU ME FUDEU')
+      await client.sendMessage(message.from, 'https://www.youtube.com/watch?v=rotmF54eSe0&ab_channel=Furac%C3%A3o2000', { linkPreview: true })
+
+      // const image = MessageMedia.fromFilePath('./assets/gorilla.jpeg')
+      await message.reply('ok')
+    } catch(e) {
+        message.reply("❌ Nao foi possivel te dar amor, tente na proxima ❌")
+    }
   } 
 });
+
