@@ -1,6 +1,7 @@
 import { Client, MessageMedia, Message, LocalAuth, MessageTypes } from 'whatsapp-web.js';
 import qrcode from "qrcode-terminal";
 import axios from 'axios';
+import { MESSAGES } from './messages';
 
 const client = new Client({
   qrMaxRetries: 3,
@@ -17,9 +18,9 @@ client.on('ready', () => {
 
 client.initialize();
 
-client.on('message_create', async (message: Message, sender: any) => {
+client.on('message_create', async (message: Message) => {
   const command = message.body.split(' ')[0]
-  if (command === "/sticker"){
+  if (command === "!sticker"){
     if(message.type === MessageTypes.IMAGE) {
       try {
         const { data } = await message.downloadMedia()
@@ -49,7 +50,7 @@ client.on('message_create', async (message: Message, sender: any) => {
     }
   }
 
-  if(command === "/image"){
+  if(command === "!image"){
     try {
       const url = message.body.substring(message.body.indexOf(" ")).trim()
       const { data } = await axios.get(url, {responseType: 'arraybuffer'})
@@ -80,8 +81,10 @@ client.on('message_create', async (message: Message, sender: any) => {
 
 client.on('message', async (message: Message) => {
   const command = message.body.split(' ')[0]
-  console.log(message.from)
-  if(command === "/teamo"){
+  if(command === '!help'){
+    await message.reply(MESSAGES.HELP)
+  }
+  if(command === "!teamo"){
     try {
       await client.sendMessage(message.from, 'TE AMO MAS TU ME FUUUUUDEUUUUUU, TE AMO MAS TU ME FUDEU')
       await client.sendMessage(message.from, 'https://www.youtube.com/watch?v=rotmF54eSe0&ab_channel=Furac%C3%A3o2000', { linkPreview: true })
