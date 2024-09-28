@@ -1,3 +1,13 @@
 export const MESSAGES = {
-  HELP: 'Os comandos do zapbot sao os seguintes: \n !sticker = faz um sticker a partir da imagem, video ou link enviada junto. \n !image = pode baixar a imagem a partir da url fornecida \n !everyone = marca geral do grupo'
-}
+  HELP: `
+  🤖 *ZapBot Comandos* 🤖
+  
+  Aqui estão os comandos disponíveis:
+  
+  - *!sticker*: Cria um sticker a partir de uma imagem, vídeo ou link enviado.
+  - *!everyone*: Menciona todos os participantes do grupo.
+  - *!ai*: Faça uma pergunta à IA e receba uma resposta inteligente.
+  
+  Use os comandos corretamente para aproveitar o máximo do ZapBot! 🚀
+  `
+};
