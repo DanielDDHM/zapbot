@@ -9,5 +9,5 @@ export const MESSAGES = {
   - *!ai*: Faça uma pergunta à IA e receba uma resposta inteligente.
   
   Use os comandos corretamente para aproveitar o máximo do ZapBot! 🚀
-  `
-};
+  `,
+}

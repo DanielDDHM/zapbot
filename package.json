@@ -20,12 +20,21 @@
   "scripts": {
     "build": "tsc",
     "start": "yarn build && node ./dist/index.js",
-    "push": "yarn prisma db push"
+    "push": "yarn prisma db push",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
   },
   "devDependencies": {
     "@types/mime-types": "^2.1.4",
     "@types/node": "^22.7.4",
     "@types/qrcode-terminal": "^0.12.2",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "eslint": "^9.11.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-unused-imports": "^4.1.4",
+    "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"
   }
