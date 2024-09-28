@@ -9,8 +9,10 @@ export async function everyone(client: Client, message: Message) {
   for (let participant of chat?.participants) {
     const contact = await client.getContactById(participant.id._serialized)
 
-    mentions.push(contact)
-    text += `@${participant.id.user} `
+    if (!contact.isMe) {
+      mentions.push(contact)
+      text += `@${participant.id.user} `
+    }
   }
 
   await chat.sendMessage(text, { mentions })
