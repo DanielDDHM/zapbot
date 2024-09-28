@@ -2,7 +2,6 @@ import { GroupChat, Message } from 'whatsapp-web.js'
 import client from './client'
 import { config } from 'dotenv'
 import { commands } from './commands'
-// import { MESSAGES } from './messages'
 import { aiChatCall } from './chat/chat'
 
 config()
@@ -21,8 +20,7 @@ client.on('message', async (message: Message) => {
         message.react('❌')
       }
     } else {
-      // message.reply(MESSAGES.WELCOME)
-      await aiChatCall(client, message, 'attendant')
+      await aiChatCall(client, message, process.env.CONTEXT_CHAT!)
     }
   })
 })

@@ -7,7 +7,6 @@ export const MESSAGES = {
   - *!sticker*: Cria um sticker a partir de uma imagem, vídeo ou link enviado.
   - *!everyone*: Menciona todos os participantes do grupo.
   - *!ai*: Faça uma pergunta à IA e receba uma resposta inteligente.
-  - *!ai-delete*: Reseta seu chat com a IA.
   - *!invite*: Cria um convite pro grupo de whatsapp
   
   Use os comandos corretamente para aproveitar o máximo do ZapBot! 🚀
