@@ -22,6 +22,10 @@ export async function aiCall(client: Client, message: Message) {
       },
     })
 
+    if (chatExists && chatExists.chat.length > Number(process.env.QTD_MAX_CHAT)) {
+      message.reply('Limite atingido, caso queira continuar entre em contato com responsavel')
+    }
+
     const questionToSend = { role: 'user', content: userInput }
 
     console.log('chatExists:', chatExists)

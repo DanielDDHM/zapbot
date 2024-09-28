@@ -30,6 +30,10 @@ export async function aiChatCall(client: Client, message: Message, ctx: string) 
       },
     })
 
+    if (chatExists && chatExists.chat.length > Number(process.env.QTD_MAX_CHAT)) {
+      message.reply('Limite atingido, caso queira continuar entre em contato com responsavel')
+    }
+
     const questionToSend = { role: 'user', content: userInput }
 
     const context = await loadContext(ctx)
