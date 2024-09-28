@@ -1,17 +1,26 @@
-import { Message } from 'whatsapp-web.js'
+import { GroupChat, Message } from 'whatsapp-web.js'
 import client from './client'
 import { config } from 'dotenv'
-import { commands } from './functions'
+import { commands } from './commands'
+import { MESSAGES } from './messages'
 
 config()
 
 client.on('message', async (message: Message) => {
-  const command = message.body.split(' ')[0]
+  const group = await message.getChat()
+  client.getChatById(group.id._serialized).then(async (chat: GroupChat | any) => {
+    if (chat.isGroup) {
+      const command = message.body.split(' ')[0]
+      const handler = commands[command]
 
-  const handler = commands[command]
-
-  if (handler) {
-    await handler(client, message)
-    message.react('👍')
-  }
+      if (handler) {
+        await handler(client, message)
+        message.react('👍')
+      } else {
+        message.react('❌')
+      }
+    } else {
+      message.reply(MESSAGES.WELCOME)
+    }
+  })
 })
