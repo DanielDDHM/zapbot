@@ -1,0 +1,28 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check out the repository
+      uses: actions/checkout@v2
+    - name: Set up SSH agent
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }} 
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_IP }} << 'EOF'
+          cd /home/ubuntu/dev/zapbot
+          git pull origin main # Pulls the latest changes
+          echo "" > .env # Clears the .env file
+          # Iterates over all secrets and adds them to .env, excluding SSH_PRIVATE_KEY and EC2_IP
+          for secret in $(printenv | grep -v 'SSH_PRIVATE_KEY\|EC2_IP'); do
+            echo $secret >> .env
+          done
+          pm2 restart all # Restarts the app using pm2
+        EOF
