@@ -1,23 +1,47 @@
 import { Client, Message } from 'whatsapp-web.js'
 import prisma from '../config/prisma'
 import axios from 'axios'
-import fs from 'fs/promises'
 
-async function loadContext(contextFile: string) {
+type ChatToSend = Array<{ role: string; content: string }>
+
+async function loadContext() {
   try {
-    const data = await fs.readFile(`./src/chat/contexts/${contextFile}.json`, 'utf-8')
-    const context = JSON.parse(data)
-    return context.context
+    const data = await prisma.chatContexts.findFirst({
+      where: {
+        owner: process.env.CHAT_OWNER,
+        name: process.env.CONTEXT_CHAT,
+      },
+    })
+    return data
   } catch (error) {
     console.error('Erro ao carregar o contexto:', error)
     return null
   }
 }
 
-export async function aiChatCall(client: Client, message: Message, ctx: string) {
+async function aiApiCall(chatToSend: ChatToSend) {
   const apiKey = process.env.AI_API_KEY
+  const response = await axios.post(
+    process.env.AI_URL!,
+    {
+      model: process.env.AI_MODEL,
+      messages: chatToSend,
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    },
+  )
+  return response.data
+}
 
+export async function aiChatCall(client: Client, message: Message) {
   const userInput = message.body
+  let chatToSend = []
+  let chatResponse
+  const questionToSend = { role: 'user', content: userInput }
 
   try {
     const contact = await message.getContact()
@@ -30,67 +54,44 @@ export async function aiChatCall(client: Client, message: Message, ctx: string) 
       },
     })
 
-    if (chatExists && chatExists.chat.length > Number(process.env.QTD_MAX_CHAT)) {
-      message.reply('Limite atingido, caso queira continuar entre em contato com responsavel')
-    }
-
-    const questionToSend = { role: 'user', content: userInput }
-
-    const context = await loadContext(ctx)
-
-    if (!context) {
-      message.reply('Estamos indisponiveis no momento.')
-      return
-    }
-
-    const chatToSend = chatExists
-      ? [...chatExists.chat, questionToSend]
-      : [...context, questionToSend]
-
-    const response = await axios.post(
-      process.env.AI_URL!,
-      {
-        model: process.env.AI_MODEL,
-        messages: chatToSend,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-      },
-    )
-
-    const chatResponse: Array<{ index: number; message: any }> = response.data.choices
-
-    if (!chatResponse || !chatResponse.length) {
-      message.reply('Chat Indisponivel')
-      return
-    }
-
     if (chatExists) {
+      if (chatExists.chat.length > Number(process.env.QTD_MAX_CHAT)) {
+        message.reply('Limite atingido, caso queira continuar entre em contato com responsavel')
+        return
+      }
+      chatToSend = [...chatExists.chat, questionToSend]
+
+      chatResponse = await aiApiCall(chatToSend as ChatToSend)
+
       await prisma.chat.update({
         where: {
           id: chatExists.id,
         },
         data: {
-          chat: [...chatExists.chat, questionToSend, chatResponse[0].message],
+          chat: [...chatToSend, chatResponse.choices[0]?.message],
         },
       })
-    }
+    } else {
+      const context = await loadContext()
 
-    if (!chatExists) {
+      if (!context) {
+        message.reply('Estamos indisponiveis no momento.')
+        return
+      }
+
+      chatToSend = [...context.context, questionToSend]
+      chatResponse = await aiApiCall(chatToSend as ChatToSend)
+
       await prisma.chat.create({
         data: {
           contact: contact.id.user,
-          chat: [...context, questionToSend, chatResponse[0].message],
+          chat: [...context.context, questionToSend, chatResponse.choices[0]?.message],
           location: source.id.user || '',
         },
       })
     }
 
-    console.log('message choices', chatResponse)
-    message.reply(chatResponse[0].message.content)
+    message.reply(chatResponse.choices[0]?.message.content)
   } catch (error: any) {
     console.log('error', error)
     message.reply('A IA esta descansando no momento')

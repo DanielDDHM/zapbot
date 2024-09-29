@@ -20,7 +20,7 @@ client.on('message', async (message: Message) => {
         message.react('❌')
       }
     } else {
-      await aiChatCall(client, message, process.env.CONTEXT_CHAT!)
+      await aiChatCall(client, message)
     }
   })
 })
