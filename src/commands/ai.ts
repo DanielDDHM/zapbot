@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { Client, Message } from 'whatsapp-web.js'
 import prisma from '../config/prisma'
+import { verifyLimitChat } from '../helpers/verifyLimitChat'
 
 export async function aiCall(client: Client, message: Message) {
   const apiKey = process.env.AI_API_KEY
@@ -22,9 +23,7 @@ export async function aiCall(client: Client, message: Message) {
       },
     })
 
-    if (chatExists && chatExists.chat.length > Number(process.env.QTD_MAX_CHAT)) {
-      message.reply('Limite atingido, caso queira continuar entre em contato com responsavel')
-    }
+    if (chatExists) verifyLimitChat(chatExists, message)
 
     const questionToSend = { role: 'user', content: userInput }
 
@@ -82,7 +81,7 @@ export async function aiCall(client: Client, message: Message) {
   }
 }
 
-export async function chatReset(message: Message) {
+export async function chatReset(client: Client, message: Message) {
   const contact = await message.getContact()
   const group = await message.getChat()
 

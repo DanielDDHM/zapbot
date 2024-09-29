@@ -4,4 +4,5 @@ dist/
 .wwebjs_auth/
 .wwebjs_cache/
 prisma/
+docker-compose.yml
 .prettierrc
