@@ -1,7 +1,7 @@
 import { GroupChat, Message } from 'whatsapp-web.js'
 import client from './client'
 import { config } from 'dotenv'
-import { commands } from './commands'
+import { commands, quotedCommands } from './commands'
 import { aiChatCall } from './chat/chat'
 
 config()
@@ -16,8 +16,11 @@ client.on('message', async (message: Message) => {
       if (handler) {
         await handler(client, message)
         message.react('👍')
-      } else {
-        message.react('❌')
+      }
+
+      if (message.hasQuotedMsg) {
+        const quotedHandler = quotedCommands[command]
+        await quotedHandler(client, message)
       }
     } else {
       await aiChatCall(client, message)
