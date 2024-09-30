@@ -1,9 +1,10 @@
 import { Client, GroupChat, Message } from 'whatsapp-web.js'
 import redis from '../config/redis'
+import { everyone } from './everyone'
 
 function parseEventMessage(message: string) {
   const trimmedMessage = message.trim()
-  const regex = /!event nome:\s*(.*?),\s*data:\s*"(.*?)",\s*horario:\s*"(.*?)"/
+  const regex = /!event nome:\s*(.*?)\s*,?\s*data:\s*"(.*?)"\s*,?\s*horario:\s*"(.*?)"/
   const match = trimmedMessage.match(regex)
 
   if (match) {
@@ -32,6 +33,13 @@ export async function event(client: Client, message: Message) {
   const group = (await message.getChat()) as GroupChat
   const creator = `- ${contact.pushname || contact.number}`
 
+  const eventExists = await redis.get(`${parsedData.nome}::${group.id._serialized}`)
+
+  if (eventExists) {
+    message.reply('⚠️ Evento ja Existe ⚠️')
+    return
+  }
+
   message.reply(
     `📅 *Novo Evento Criado!*\n\n` +
       `Um novo evento foi adicionado à sua agenda:\n\n` +
@@ -44,8 +52,14 @@ export async function event(client: Client, message: Message) {
       `Não se esqueça de adicionar este evento ao seu calendário! Caso tenha dúvidas ou precise de mais informações, digite *!help* para acessar a lista de comandos disponíveis.\n\n` +
       `Agradecemos por usar o ZapBot e esperamos que o evento seja um sucesso! 🎉`,
   )
+  await everyone(client, message)
 
-  await redis.set(`${parsedData.nome}::${group.id._serialized}`, JSON.stringify([creator]))
+  await redis.set(
+    `${parsedData.nome}::${group.id._serialized}`,
+    JSON.stringify([creator]),
+    'EX',
+    Number(process.env.REDIS_TTL),
+  )
 }
 
 export async function participation(client: Client, message: Message) {
@@ -79,7 +93,12 @@ export async function participation(client: Client, message: Message) {
           participants = participants.filter(item => item !== participantName)
         }
 
-        await redis.set(`${eventKey}::${group.id._serialized}`, JSON.stringify(participants))
+        await redis.set(
+          `${eventKey}::${group.id._serialized}`,
+          JSON.stringify(participants),
+          'EX',
+          Number(process.env.REDIS_TTL),
+        )
 
         const participantsList = participants.join('\n')
 
